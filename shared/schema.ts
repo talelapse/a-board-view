@@ -7,6 +7,7 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   birthYear: integer("birth_year").notNull(),
   gender: text("gender").notNull(), // 'a' or 'b'
+  isBot: boolean("is_bot").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

@@ -2,8 +2,10 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import { insertUserSchema, insertPostSchema, insertCommentSchema, insertChatMessageSchema } from "@shared/schema";
+import { insertUserSchema, insertPostSchema, insertCommentSchema, insertChatMessageSchema, matches } from "@shared/schema";
 import { z } from "zod";
+import { botService } from "./botService";
+import { db } from "./db";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -32,6 +34,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const match = await storage.getMatch(message.matchId);
           if (match) {
             const otherUserId = match.user1Id === userId ? match.user2Id : match.user1Id;
+            const otherUser = await storage.getUser(otherUserId);
             const otherUserWs = connectedUsers.get(otherUserId);
             
             const messageData = {
@@ -42,6 +45,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             if (otherUserWs && otherUserWs.readyState === WebSocket.OPEN) {
               otherUserWs.send(JSON.stringify(messageData));
+            }
+            
+            // If the other user is a bot, generate a response
+            if (otherUser && otherUser.isBot) {
+              setTimeout(async () => {
+                try {
+                  const recentMessages = await storage.getChatMessages(message.matchId);
+                  const conversationHistory = recentMessages.slice(-10).map(msg => msg.content);
+                  
+                  const botResponse = await botService.generateResponse(message.content, conversationHistory);
+                  const botMessage = await storage.createChatMessage(message.matchId, otherUserId, botResponse);
+                  
+                  // Send bot response back to the user
+                  const botMessageData = {
+                    type: 'chat_message',
+                    message: botMessage,
+                    sender: otherUser
+                  };
+                  
+                  if (ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify(botMessageData));
+                  }
+                } catch (error) {
+                  console.error('Bot response error:', error);
+                }
+              }, 1000 + Math.random() * 2000); // Random delay between 1-3 seconds
             }
           }
         }
@@ -148,7 +177,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/matches/find', async (req, res) => {
     try {
       const userId = parseInt(req.body.userId);
-      const match = await storage.findRandomMatch(userId);
+      let match = await storage.findRandomMatch(userId);
+      
+      // If no real users available, match with a bot
+      if (!match) {
+        await botService.ensureBotsExist();
+        const bot = await botService.getOrCreateBot();
+        
+        // Create a proper match with the bot in the database
+        const [newMatch] = await db.insert(matches).values({
+          user1Id: userId,
+          user2Id: bot.id
+        }).returning();
+        
+        const user1 = await storage.getUser(userId);
+        match = {
+          ...newMatch,
+          user1: user1!,
+          user2: bot,
+          partner: bot
+        } as any;
+      }
+      
       res.json({ match });
     } catch (error) {
       res.status(400).json({ error: error instanceof Error ? error.message : 'Failed to find match' });

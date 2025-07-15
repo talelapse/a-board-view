@@ -17,7 +17,7 @@ import {
   type InsertChatMessage
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, or, ne } from "drizzle-orm";
+import { eq, desc, and, or, ne, sql } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
@@ -41,6 +41,10 @@ export interface IStorage {
   findRandomMatch(userId: number): Promise<Match | null>;
   getUserMatches(userId: number): Promise<Match[]>;
   getMatch(matchId: number): Promise<Match | undefined>;
+  
+  // Bot operations
+  createBot(birthYear: number, gender: string): Promise<User>;
+  getRandomBot(): Promise<User | null>;
   
   // Chat operations
   createChatMessage(matchId: number, senderId: number, content: string): Promise<ChatMessage>;
@@ -157,11 +161,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async findRandomMatch(userId: number): Promise<Match | null> {
-    // Find users who haven't been matched with current user
+    // Find users who haven't been matched with current user and are not bots
     const availableUsers = await db
       .select()
       .from(users)
-      .where(ne(users.id, userId));
+      .where(and(ne(users.id, userId), eq(users.isBot, false)));
     
     if (availableUsers.length === 0) {
       return null;
@@ -256,6 +260,21 @@ export class DatabaseStorage implements IStorage {
       .from(chatMessages)
       .where(eq(chatMessages.matchId, matchId))
       .orderBy(desc(chatMessages.createdAt));
+  }
+
+  // Bot operations
+  async createBot(birthYear: number, gender: string): Promise<User> {
+    const [bot] = await db.insert(users).values({
+      birthYear,
+      gender,
+      isBot: true,
+    }).returning();
+    return bot;
+  }
+
+  async getRandomBot(): Promise<User | null> {
+    const [bot] = await db.select().from(users).where(eq(users.isBot, true)).orderBy(sql`RANDOM()`).limit(1);
+    return bot || null;
   }
 }
 
