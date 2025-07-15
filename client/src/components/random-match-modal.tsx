@@ -1,0 +1,152 @@
+import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { useLocation } from "wouter";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { apiRequest } from "@/lib/queryClient";
+import { getCurrentUser } from "@/lib/auth";
+import { useToast } from "@/hooks/use-toast";
+import { Search, Check } from "lucide-react";
+
+interface RandomMatchModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function RandomMatchModal({ isOpen, onClose }: RandomMatchModalProps) {
+  const [, setLocation] = useLocation();
+  const [matchState, setMatchState] = useState<"searching" | "found" | "none">("none");
+  const [foundMatch, setFoundMatch] = useState<any>(null);
+  const currentUser = getCurrentUser();
+  const { toast } = useToast();
+
+  const findMatchMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/matches/find", {
+        userId: currentUser?.id,
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      if (data.match) {
+        setFoundMatch(data.match);
+        setMatchState("found");
+      } else {
+        toast({
+          title: "No matches found",
+          description: "Try again later when more users are online.",
+          variant: "destructive",
+        });
+        setMatchState("none");
+      }
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to find match",
+        description: error.message,
+        variant: "destructive",
+      });
+      setMatchState("none");
+    },
+  });
+
+  const handleStartSearch = () => {
+    setMatchState("searching");
+    setTimeout(() => {
+      findMatchMutation.mutate();
+    }, 2000); // Simulate search delay
+  };
+
+  const handleStartChat = () => {
+    if (foundMatch) {
+      setLocation(`/chat/${foundMatch.id}`);
+      onClose();
+      resetState();
+    }
+  };
+
+  const handleDecline = () => {
+    setMatchState("none");
+    setFoundMatch(null);
+    handleStartSearch(); // Find another match
+  };
+
+  const resetState = () => {
+    setMatchState("none");
+    setFoundMatch(null);
+  };
+
+  const handleClose = () => {
+    resetState();
+    onClose();
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-sm">
+        {matchState === "none" && (
+          <div className="text-center py-4">
+            <div className="w-20 h-20 bg-primary rounded-full mx-auto mb-4 flex items-center justify-center">
+              <Search className="w-8 h-8 text-white" />
+            </div>
+            <h3 className="text-lg font-bold text-text-primary mb-2">Find a Match</h3>
+            <p className="text-text-secondary mb-6">Connect with someone random for a chat</p>
+            <Button
+              onClick={handleStartSearch}
+              className="w-full bg-primary hover:bg-primary-dark"
+            >
+              Start Matching
+            </Button>
+          </div>
+        )}
+
+        {matchState === "searching" && (
+          <div className="text-center py-4">
+            <div className="w-20 h-20 bg-primary rounded-full mx-auto mb-4 flex items-center justify-center animate-pulse">
+              <Search className="w-8 h-8 text-white" />
+            </div>
+            <h3 className="text-lg font-bold text-text-primary mb-2">Finding your match...</h3>
+            <p className="text-text-secondary mb-6">Looking for someone to chat with</p>
+            <Button
+              onClick={handleClose}
+              variant="outline"
+              className="w-full"
+            >
+              Cancel
+            </Button>
+          </div>
+        )}
+
+        {matchState === "found" && foundMatch && (
+          <div className="text-center py-4">
+            <div className="w-20 h-20 bg-green-500 rounded-full mx-auto mb-4 flex items-center justify-center">
+              <Check className="w-8 h-8 text-white" />
+            </div>
+            <h3 className="text-lg font-bold text-text-primary mb-2">Match Found!</h3>
+            <div className="bg-gray-50 rounded-lg p-4 mb-6">
+              <div className="flex items-center justify-center space-x-2">
+                <span className="text-text-secondary">Born {foundMatch.partner?.birthYear}</span>
+                <div className={`w-2 h-2 rounded-full ${foundMatch.partner?.gender === 'a' ? 'bg-gender-a' : 'bg-gender-b'}`}></div>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <Button
+                onClick={handleStartChat}
+                className="w-full bg-primary hover:bg-primary-dark"
+              >
+                Start Chatting
+              </Button>
+              <Button
+                onClick={handleDecline}
+                variant="outline"
+                className="w-full"
+              >
+                Find Another
+              </Button>
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
