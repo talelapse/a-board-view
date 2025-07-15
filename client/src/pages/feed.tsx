@@ -7,6 +7,7 @@ import RandomMatchModal from "@/components/random-match-modal";
 import BottomNavigation from "@/components/bottom-navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { Plus, UserPlus } from "lucide-react";
+import { t } from "@/lib/i18n";
 
 export default function Feed() {
   const [showCreatePost, setShowCreatePost] = useState(false);
@@ -25,7 +26,7 @@ export default function Feed() {
       <div className="min-h-screen bg-bg-soft flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-text-secondary">Loading feed...</p>
+          <p className="text-text-secondary">피드를 불러오는 중...</p>
         </div>
       </div>
     );
@@ -36,13 +37,13 @@ export default function Feed() {
       <div className="flex flex-col h-screen">
         {/* Header */}
         <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-text-primary">Feed</h1>
+          <h1 className="text-xl font-bold text-text-primary">{t('feed')}</h1>
           <Button
-            onClick={() => setShowRandomMatch(true)}
+            onClick={() => setShowCreatePost(true)}
             className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-full text-sm"
           >
-            <UserPlus className="w-4 h-4 mr-2" />
-            Match
+            <Plus className="w-4 h-4 mr-2" />
+            {t('post')}
           </Button>
         </header>
 
@@ -53,10 +54,10 @@ export default function Feed() {
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                 <i className="fas fa-stream text-gray-400 text-2xl"></i>
               </div>
-              <h3 className="text-lg font-medium text-text-primary mb-2">No posts yet</h3>
-              <p className="text-text-secondary mb-4">Be the first to share something with the community</p>
+              <h3 className="text-lg font-medium text-text-primary mb-2">{t('noPosts')}</h3>
+              <p className="text-text-secondary mb-4">{t('beFirstToShare')}</p>
               <Button onClick={() => setShowCreatePost(true)} className="bg-primary hover:bg-primary-dark">
-                Create First Post
+                {t('createFirstPost')}
               </Button>
             </div>
           ) : (
@@ -68,7 +69,6 @@ export default function Feed() {
 
         <BottomNavigation 
           currentPage="feed" 
-          onCreatePost={() => setShowCreatePost(true)}
           onRandomMatch={() => setShowRandomMatch(true)}
         />
       </div>

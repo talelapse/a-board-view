@@ -47,6 +47,14 @@ export const chatMessages = pgTable("chat_messages", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const friendships = pgTable("friendships", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  friendId: integer("friend_id").references(() => users.id).notNull(),
+  anonymousId: text("anonymous_id").notNull(), // Generated anonymous ID for display
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   posts: many(posts),
@@ -82,6 +90,11 @@ export const chatMessagesRelations = relations(chatMessages, ({ one }) => ({
   sender: one(users, { fields: [chatMessages.senderId], references: [users.id] }),
 }));
 
+export const friendshipsRelations = relations(friendships, ({ one }) => ({
+  user: one(users, { fields: [friendships.userId], references: [users.id] }),
+  friend: one(users, { fields: [friendships.friendId], references: [users.id] }),
+}));
+
 // Schemas
 export const insertUserSchema = createInsertSchema(users).pick({
   birthYear: true,
@@ -112,3 +125,5 @@ export type Like = typeof likes.$inferSelect;
 export type Match = typeof matches.$inferSelect;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
+export type Friendship = typeof friendships.$inferSelect;
+export type InsertFriendship = typeof friendships.$inferInsert;

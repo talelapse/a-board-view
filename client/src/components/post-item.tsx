@@ -5,8 +5,9 @@ import { Textarea } from "@/components/ui/textarea";
 import CommentItem from "./comment-item";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { getCurrentUser } from "@/lib/auth";
-import { Heart, MessageCircle } from "lucide-react";
+import { Heart, MessageCircle, MoreHorizontal } from "lucide-react";
 import { format } from "date-fns";
+import { t } from "@/lib/i18n";
 
 interface PostItemProps {
   post: any;
@@ -15,6 +16,7 @@ interface PostItemProps {
 export default function PostItem({ post }: PostItemProps) {
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState("");
+  const [showAuthorInfo, setShowAuthorInfo] = useState(false);
   const currentUser = getCurrentUser();
 
   const { data: commentsData } = useQuery({
@@ -68,19 +70,33 @@ export default function PostItem({ post }: PostItemProps) {
 
   return (
     <div className="bg-white border-b border-gray-100 p-4">
-      <div className="flex items-start space-x-3 mb-3">
-        <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-          <i className="fas fa-user text-gray-500"></i>
-        </div>
-        <div className="flex-1">
-          <div className="flex items-center space-x-2">
-            <span className="text-sm text-text-secondary">Born {post.user.birthYear}</span>
-            <div className={`w-2 h-2 rounded-full ${post.user.gender === 'a' ? 'bg-gender-a' : 'bg-gender-b'}`}></div>
-            <span className="text-xs text-text-secondary">
-              {format(new Date(post.createdAt), 'h:mm a')}
-            </span>
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-start space-x-3 flex-1">
+          <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+            <i className="fas fa-user text-gray-500"></i>
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center space-x-2">
+              <span className="text-xs text-text-secondary">
+                {format(new Date(post.createdAt), 'h:mm a')}
+              </span>
+              {showAuthorInfo && (
+                <>
+                  <span className="text-sm text-text-secondary">{t('born')} {post.user.birthYear}</span>
+                  <div className={`w-2 h-2 rounded-full ${post.user.gender === 'a' ? 'bg-gender-a' : 'bg-gender-b'}`}></div>
+                </>
+              )}
+            </div>
           </div>
         </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowAuthorInfo(!showAuthorInfo)}
+          className="text-text-secondary hover:text-text-primary p-1"
+        >
+          <MoreHorizontal className="w-4 h-4" />
+        </Button>
       </div>
 
       <div className="mb-3">
@@ -112,7 +128,7 @@ export default function PostItem({ post }: PostItemProps) {
           className="flex items-center space-x-2 text-text-secondary hover:text-primary"
         >
           <MessageCircle className="w-4 h-4" />
-          <span>{comments.length} comments</span>
+          <span>{comments.length} {t('comments')}</span>
         </Button>
       </div>
 
@@ -125,7 +141,7 @@ export default function PostItem({ post }: PostItemProps) {
           {currentUser && (
             <form onSubmit={handleComment} className="mt-4">
               <Textarea
-                placeholder="Write a comment..."
+                placeholder={t('writeComment')}
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 className="mb-2 min-h-[60px]"
@@ -136,7 +152,7 @@ export default function PostItem({ post }: PostItemProps) {
                 className="bg-primary hover:bg-primary-dark"
                 disabled={!newComment.trim() || commentMutation.isPending}
               >
-                {commentMutation.isPending ? "Posting..." : "Post Comment"}
+                {commentMutation.isPending ? t('posting') : t('postComment')}
               </Button>
             </form>
           )}

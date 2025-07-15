@@ -7,6 +7,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { getCurrentUser } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { Search, Check } from "lucide-react";
+import { t } from "@/lib/i18n";
 
 interface RandomMatchModalProps {
   isOpen: boolean;
@@ -33,8 +34,8 @@ export default function RandomMatchModal({ isOpen, onClose }: RandomMatchModalPr
         setMatchState("found");
       } else {
         toast({
-          title: "No matches found",
-          description: "Try again later when more users are online.",
+          title: t('noMatchesFound'),
+          description: t('tryAgainLater'),
           variant: "destructive",
         });
         setMatchState("none");
@@ -89,13 +90,13 @@ export default function RandomMatchModal({ isOpen, onClose }: RandomMatchModalPr
             <div className="w-20 h-20 bg-primary rounded-full mx-auto mb-4 flex items-center justify-center">
               <Search className="w-8 h-8 text-white" />
             </div>
-            <h3 className="text-lg font-bold text-text-primary mb-2">Find a Match</h3>
-            <p className="text-text-secondary mb-6">Connect with someone random for a chat</p>
+            <h3 className="text-lg font-bold text-text-primary mb-2">{t('findMatch')}</h3>
+            <p className="text-text-secondary mb-6">{t('connectWithRandom')}</p>
             <Button
               onClick={handleStartSearch}
               className="w-full bg-primary hover:bg-primary-dark"
             >
-              Start Matching
+              {t('startMatching')}
             </Button>
           </div>
         )}
@@ -105,14 +106,14 @@ export default function RandomMatchModal({ isOpen, onClose }: RandomMatchModalPr
             <div className="w-20 h-20 bg-primary rounded-full mx-auto mb-4 flex items-center justify-center animate-pulse">
               <Search className="w-8 h-8 text-white" />
             </div>
-            <h3 className="text-lg font-bold text-text-primary mb-2">Finding your match...</h3>
-            <p className="text-text-secondary mb-6">Looking for someone to chat with</p>
+            <h3 className="text-lg font-bold text-text-primary mb-2">{t('findingMatch')}</h3>
+            <p className="text-text-secondary mb-6">{t('lookingForSomeone')}</p>
             <Button
               onClick={handleClose}
               variant="outline"
               className="w-full"
             >
-              Cancel
+              {t('cancel')}
             </Button>
           </div>
         )}
@@ -122,10 +123,10 @@ export default function RandomMatchModal({ isOpen, onClose }: RandomMatchModalPr
             <div className="w-20 h-20 bg-green-500 rounded-full mx-auto mb-4 flex items-center justify-center">
               <Check className="w-8 h-8 text-white" />
             </div>
-            <h3 className="text-lg font-bold text-text-primary mb-2">Match Found!</h3>
+            <h3 className="text-lg font-bold text-text-primary mb-2">{t('matchFound')}</h3>
             <div className="bg-gray-50 rounded-lg p-4 mb-6">
               <div className="flex items-center justify-center space-x-2">
-                <span className="text-text-secondary">Born {foundMatch.partner?.birthYear}</span>
+                <span className="text-text-secondary">{t('born')} {foundMatch.partner?.birthYear}</span>
                 <div className={`w-2 h-2 rounded-full ${foundMatch.partner?.gender === 'a' ? 'bg-gender-a' : 'bg-gender-b'}`}></div>
               </div>
             </div>
@@ -134,14 +135,14 @@ export default function RandomMatchModal({ isOpen, onClose }: RandomMatchModalPr
                 onClick={handleStartChat}
                 className="w-full bg-primary hover:bg-primary-dark"
               >
-                Start Chatting
+                {t('startChatting')}
               </Button>
               <Button
                 onClick={handleDecline}
                 variant="outline"
                 className="w-full"
               >
-                Find Another
+                {t('findAnother')}
               </Button>
             </div>
           </div>

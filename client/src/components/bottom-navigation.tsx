@@ -1,16 +1,15 @@
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Home, Plus, UserPlus, MessageCircle } from "lucide-react";
+import { Home, UserPlus, MessageCircle, Search } from "lucide-react";
+import { t } from "@/lib/i18n";
 
 interface BottomNavigationProps {
   currentPage: string;
-  onCreatePost?: () => void;
   onRandomMatch?: () => void;
 }
 
 export default function BottomNavigation({ 
   currentPage, 
-  onCreatePost, 
   onRandomMatch 
 }: BottomNavigationProps) {
   const [, setLocation] = useLocation();
@@ -22,33 +21,28 @@ export default function BottomNavigation({
           variant="ghost"
           size="sm"
           onClick={() => setLocation("/feed")}
-          className={`p-2 ${currentPage === 'feed' ? 'text-primary' : 'text-text-secondary hover:text-primary'}`}
+          className={`flex flex-col items-center p-2 ${currentPage === 'feed' ? 'text-primary' : 'text-text-secondary hover:text-primary'}`}
         >
           <Home className="w-5 h-5" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onCreatePost}
-          className="p-2 text-text-secondary hover:text-primary"
-        >
-          <Plus className="w-5 h-5" />
+          <span className="text-xs mt-1">{t('feed')}</span>
         </Button>
         <Button
           variant="ghost"
           size="sm"
           onClick={onRandomMatch}
-          className="p-2 text-text-secondary hover:text-primary"
+          className="flex flex-col items-center p-2 text-text-secondary hover:text-primary"
         >
-          <UserPlus className="w-5 h-5" />
+          <Search className="w-5 h-5" />
+          <span className="text-xs mt-1">{t('match')}</span>
         </Button>
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setLocation("/chats")}
-          className={`p-2 ${currentPage === 'chats' ? 'text-primary' : 'text-text-secondary hover:text-primary'}`}
+          className={`flex flex-col items-center p-2 ${currentPage === 'chats' ? 'text-primary' : 'text-text-secondary hover:text-primary'}`}
         >
           <MessageCircle className="w-5 h-5" />
+          <span className="text-xs mt-1">{t('chats')}</span>
         </Button>
       </div>
     </nav>

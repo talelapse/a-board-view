@@ -7,6 +7,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { getCurrentUser } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { Camera, X } from "lucide-react";
+import { t } from "@/lib/i18n";
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -33,8 +34,8 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
       setImageUrl("");
       onClose();
       toast({
-        title: "Post created",
-        description: "Your anonymous post has been shared.",
+        title: t('postCreated'),
+        description: t('postShared'),
       });
     },
     onError: (error) => {
@@ -50,8 +51,8 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
     e.preventDefault();
     if (!content.trim()) {
       toast({
-        title: "Please write something",
-        description: "Post content cannot be empty.",
+        title: t('pleaseWriteSomething'),
+        description: t('postContentEmpty'),
         variant: "destructive",
       });
       return;
@@ -70,7 +71,7 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
-            Create Post
+            {t('createPost')}
             <Button variant="ghost" size="sm" onClick={handleClose}>
               <X className="w-4 h-4" />
             </Button>
@@ -79,7 +80,7 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <Textarea
-            placeholder="What's on your mind?"
+            placeholder={t('whatsOnYourMind')}
             value={content}
             onChange={(e) => setContent(e.target.value)}
             className="min-h-[120px] resize-none"
@@ -89,7 +90,7 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Camera className="w-4 h-4 text-text-secondary" />
-              <span className="text-sm text-text-secondary">Photo (URL)</span>
+              <span className="text-sm text-text-secondary">{t('photoUrl')}</span>
             </div>
             <span className="text-xs text-text-secondary">
               {content.length}/500
@@ -109,7 +110,7 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
             className="w-full bg-primary hover:bg-primary-dark"
             disabled={!content.trim() || createPostMutation.isPending}
           >
-            {createPostMutation.isPending ? "Sharing..." : "Share Anonymously"}
+            {createPostMutation.isPending ? t('sharing') : t('shareAnonymously')}
           </Button>
         </form>
       </DialogContent>

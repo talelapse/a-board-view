@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useWebSocket } from "@/hooks/use-websocket";
 import { getCurrentUser } from "@/lib/auth";
-import { ArrowLeft, X, Send } from "lucide-react";
+import { ArrowLeft, X, Send, UserPlus } from "lucide-react";
 import { format } from "date-fns";
+import { t } from "@/lib/i18n";
 
 export default function Chat() {
   const [, setLocation] = useLocation();
@@ -69,14 +70,22 @@ export default function Chat() {
               <div>
                 <div className="flex items-center space-x-2">
                   <span className="text-sm font-medium text-text-primary">
-                    Born {partner?.birthYear}
+                    {t('born')} {partner?.birthYear}
                   </span>
                   <div className={`w-2 h-2 rounded-full ${partner?.gender === 'a' ? 'bg-gender-a' : 'bg-gender-b'}`}></div>
                 </div>
-                <span className="text-xs text-green-500">Online</span>
+                <span className="text-xs text-green-500">{t('online')}</span>
               </div>
             </div>
           </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {/* TODO: Send friend request */}}
+            className="text-blue-500 hover:text-blue-600 p-0 mr-2"
+          >
+            <UserPlus className="w-5 h-5" />
+          </Button>
           <Button
             variant="ghost"
             size="sm"
@@ -121,7 +130,7 @@ export default function Chat() {
           <form onSubmit={handleSendMessage} className="flex items-center space-x-3">
             <Input
               type="text"
-              placeholder="Type a message..."
+              placeholder={t('typeMessage')}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               className="flex-1 rounded-full"

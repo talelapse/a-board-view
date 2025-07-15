@@ -22,8 +22,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         if (message.type === 'auth') {
           userId = message.userId;
-          connectedUsers.set(userId, ws);
-        } else if (message.type === 'chat_message' && userId) {
+          if (userId) {
+            connectedUsers.set(userId, ws);
+          }
+        } else if (message.type === 'chat_message' && userId !== null) {
           const chatMessage = await storage.createChatMessage(message.matchId, userId, message.content);
           
           // Send to both users in the match
@@ -62,7 +64,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.createUser(userData);
       res.json({ user });
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      res.status(400).json({ error: error instanceof Error ? error.message : 'Registration failed' });
     }
   });
 
@@ -74,7 +76,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.json({ user });
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      res.status(400).json({ error: error instanceof Error ? error.message : 'Failed to fetch user' });
     }
   });
 
@@ -84,7 +86,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const posts = await storage.getPosts();
       res.json({ posts });
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      res.status(400).json({ error: error instanceof Error ? error.message : 'Failed to fetch posts' });
     }
   });
 
@@ -95,7 +97,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const post = await storage.createPost(userId, postData);
       res.json({ post });
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      res.status(400).json({ error: error instanceof Error ? error.message : 'Failed to create post' });
     }
   });
 
@@ -105,7 +107,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const comments = await storage.getCommentsByPost(postId);
       res.json({ comments });
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      res.status(400).json({ error: error instanceof Error ? error.message : 'Failed to fetch comments' });
     }
   });
 
@@ -117,7 +119,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const comment = await storage.createComment(postId, userId, commentData);
       res.json({ comment });
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      res.status(400).json({ error: error instanceof Error ? error.message : 'Failed to create comment' });
     }
   });
 
@@ -128,7 +130,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.toggleLike(postId, userId);
       res.json({ success: true });
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      res.status(400).json({ error: error instanceof Error ? error.message : 'Failed to toggle like' });
     }
   });
 
@@ -138,7 +140,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const likes = await storage.getLikesByPost(postId);
       res.json({ likes });
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      res.status(400).json({ error: error instanceof Error ? error.message : 'Failed to fetch likes' });
     }
   });
 
@@ -149,7 +151,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const match = await storage.findRandomMatch(userId);
       res.json({ match });
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      res.status(400).json({ error: error instanceof Error ? error.message : 'Failed to find match' });
     }
   });
 
@@ -159,7 +161,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const matches = await storage.getUserMatches(userId);
       res.json({ matches });
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      res.status(400).json({ error: error instanceof Error ? error.message : 'Failed to fetch matches' });
     }
   });
 
@@ -169,7 +171,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const messages = await storage.getChatMessages(matchId);
       res.json({ messages });
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      res.status(400).json({ error: error instanceof Error ? error.message : 'Failed to fetch messages' });
     }
   });
 
