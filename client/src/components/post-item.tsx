@@ -9,6 +9,12 @@ import { Heart, MessageCircle, MoreHorizontal } from "lucide-react";
 import { format } from "date-fns";
 import { t } from "@/lib/i18n";
 
+// Generate anonymous ID based on user ID
+function generateAnonymousId(userId: number): string {
+  const anonymousIds = ['익명A', '익명B', '익명C', '익명D', '익명E', '익명F', '익명G', '익명H', '익명I', '익명J'];
+  return anonymousIds[userId % anonymousIds.length];
+}
+
 interface PostItemProps {
   post: any;
 }
@@ -82,7 +88,7 @@ export default function PostItem({ post }: PostItemProps) {
               </span>
               {showAuthorInfo && (
                 <>
-                  <span className="text-sm text-text-secondary">{t('born')} {post.user.birthYear}</span>
+                  <span className="text-sm text-text-secondary">{generateAnonymousId(post.user.id)}</span>
                   <div className={`w-2 h-2 rounded-full ${post.user.gender === 'a' ? 'bg-gender-a' : 'bg-gender-b'}`}></div>
                 </>
               )}
