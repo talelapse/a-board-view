@@ -124,12 +124,7 @@ export default function RandomMatchModal({ isOpen, onClose }: RandomMatchModalPr
               <Check className="w-8 h-8 text-white" />
             </div>
             <h3 className="text-lg font-bold text-text-primary mb-2">{t('matchFound')}</h3>
-            <div className="bg-gray-50 rounded-lg p-4 mb-6">
-              <div className="flex items-center justify-center space-x-2">
-                <span className="text-text-secondary">{t('born')} {foundMatch.partner?.birthYear}</span>
-                <div className={`w-2 h-2 rounded-full ${foundMatch.partner?.gender === 'a' ? 'bg-gender-a' : 'bg-gender-b'}`}></div>
-              </div>
-            </div>
+            <p className="text-text-secondary mb-6">{t('someoneConnected')}</p>
             <div className="space-y-3">
               <Button
                 onClick={handleStartChat}

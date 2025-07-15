@@ -68,13 +68,9 @@ export default function Chat() {
                 <i className="fas fa-user text-gray-500 text-sm"></i>
               </div>
               <div>
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm font-medium text-text-primary">
-                    {t('born')} {partner?.birthYear}
-                  </span>
-                  <div className={`w-2 h-2 rounded-full ${partner?.gender === 'a' ? 'bg-gender-a' : 'bg-gender-b'}`}></div>
-                </div>
-                <span className="text-xs text-green-500">{t('online')}</span>
+                <span className="text-sm font-medium text-text-primary">
+                  {t('chat')}
+                </span>
               </div>
             </div>
           </div>

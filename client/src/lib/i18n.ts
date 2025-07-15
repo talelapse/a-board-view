@@ -46,12 +46,14 @@ export const translations = {
     findAnother: 'Find Another',
     
     // Chat
+    chat: 'Chat',
     online: 'Online',
     typeMessage: 'Type a message...',
     noChats: 'No chats yet',
     startRandomMatch: 'Start a random match to begin chatting with someone new',
     findSomeone: 'Find Someone',
     matched: 'Matched',
+    someoneConnected: 'Someone connected',
     
     // Notifications
     welcome: 'Welcome!',
@@ -119,12 +121,14 @@ export const translations = {
     findAnother: '다른 사람 찾기',
     
     // Chat
+    chat: '채팅',
     online: '온라인',
     typeMessage: '메시지를 입력하세요...',
     noChats: '아직 채팅이 없습니다',
     startRandomMatch: '새로운 사람과 채팅을 시작하려면 랜덤 매칭을 시작하세요',
     findSomeone: '누군가 찾기',
     matched: '매칭됨',
+    someoneConnected: '누군가 연결되었습니다',
     
     // Notifications
     welcome: '환영합니다!',

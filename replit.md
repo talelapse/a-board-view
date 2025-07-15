@@ -50,9 +50,11 @@ Preferred communication style: Simple, everyday language.
 
 ### Matching System
 - **Random Matching**: Users can find random matches for chat
-- **Chat System**: Real-time messaging between matched users
+- **Bot Matching**: When no real users are available, system automatically matches with AI bots
+- **Chat System**: Real-time messaging between matched users and bots
 - **WebSocket Implementation**: Persistent connections for instant messaging
 - **Match Persistence**: Matches stored in database for ongoing conversations
+- **Anonymous Chat**: Partner information is hidden during chat sessions
 
 ### UI/UX Design
 - **Mobile-first**: Responsive design optimized for mobile devices
@@ -104,6 +106,7 @@ Preferred communication style: Simple, everyday language.
 - **Validation**: Zod for schema validation
 - **Date Handling**: date-fns for date formatting
 - **WebSocket**: Native WebSocket for real-time features
+- **AI Integration**: OpenAI GPT-4o for bot conversations
 
 ### Development Dependencies
 - **Build Tools**: Vite, esbuild, tsx
