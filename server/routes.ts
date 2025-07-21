@@ -2,10 +2,9 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import { insertUserSchema, insertPostSchema, insertCommentSchema, insertChatMessageSchema, matches } from "@shared/schema";
+import { insertUserSchema, insertPostSchema, insertCommentSchema, insertChatMessageSchema } from "@shared/schema";
 import { z } from "zod";
 import { botService } from "./botService";
-import { db } from "./db";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -183,20 +182,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!match) {
         await botService.ensureBotsExist();
         const bot = await botService.getOrCreateBot();
-        
-        // Create a proper match with the bot in the database
-        const [newMatch] = await db.insert(matches).values({
-          user1Id: userId,
-          user2Id: bot.id
-        }).returning();
-        
-        const user1 = await storage.getUser(userId);
-        match = {
-          ...newMatch,
-          user1: user1!,
-          user2: bot,
-          partner: bot
-        } as any;
+        match = await storage.createMatch(userId, bot.id);
+        (match as any).partner = bot;
       }
       
       res.json({ match });
