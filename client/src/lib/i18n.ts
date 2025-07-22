@@ -1,4 +1,6 @@
-export type Language = 'en' | 'ko';
+import { createContext, useContext } from 'react';
+
+export type Language = 'en' | 'ko' | 'ja';
 
 export const translations = {
   en: {
@@ -70,11 +72,22 @@ export const translations = {
     noMatchesFound: 'No matches found',
     tryAgainLater: 'Try again later when more users are online.',
     
+    // Error pages
+    pageNotFound: '404 Page Not Found',
+    pageNotFoundDesc: 'Did you forget to add the page to the router?',
+    
+    // Loading states
+    loadingFeed: 'Loading feed...',
+    
     // Common
     born: 'Born',
     cancel: 'Cancel',
     close: 'Close',
     more: 'More',
+    language: 'Language',
+    korean: '한국어',
+    english: 'English',
+    japanese: '日本語',
   },
   ko: {
     // Navigation
@@ -145,11 +158,108 @@ export const translations = {
     noMatchesFound: '매칭을 찾을 수 없습니다',
     tryAgainLater: '더 많은 사용자가 온라인일 때 다시 시도해주세요.',
     
+    // Error pages
+    pageNotFound: '404 페이지를 찾을 수 없습니다',
+    pageNotFoundDesc: '라우터에 페이지를 추가하는 것을 잊으셨나요?',
+    
+    // Loading states
+    loadingFeed: '피드를 불러오는 중...',
+    
     // Common
     born: '출생',
     cancel: '취소',
     close: '닫기',
     more: '더보기',
+    language: '언어',
+    korean: '한국어',
+    english: 'English',
+    japanese: '日本語',
+  },
+  ja: {
+    // Navigation
+    feed: 'フィード',
+    match: 'マッチング',
+    chats: 'チャット',
+    post: '投稿',
+    
+    // Registration
+    joinAnonymous: '匿名参加',
+    connectWithoutRevealing: '身元を明かすことなく接続',
+    birthYear: '生年',
+    gender: '性別',
+    optionA: 'オプションA',
+    optionB: 'オプションB',
+    createAnonymousProfile: '匿名プロフィール作成',
+    creating: '作成中...',
+    identityRemains: 'あなたの身元は完全に匿名のまま保たれます。マッチングには生年と性別のみが使用されます。',
+    
+    // Feed
+    noPosts: 'まだ投稿がありません',
+    beFirstToShare: 'コミュニティで最初に何かを共有してみてください',
+    createFirstPost: '最初の投稿を作成',
+    
+    // Posts
+    createPost: '投稿作成',
+    whatsOnYourMind: '今何を考えていますか？',
+    photoUrl: '写真（URL）',
+    shareAnonymously: '匿名で共有',
+    sharing: '共有中...',
+    comments: 'コメント',
+    writeComment: 'コメントを書く...',
+    postComment: 'コメント投稿',
+    posting: '投稿中...',
+    
+    // Matching
+    findMatch: 'マッチを見つける',
+    connectWithRandom: 'ランダムな誰かとチャットで繋がる',
+    startMatching: 'マッチング開始',
+    findingMatch: 'マッチを探しています...',
+    lookingForSomeone: 'チャットする相手を探しています',
+    matchFound: 'マッチ成功！',
+    startChatting: 'チャット開始',
+    findAnother: '他の人を探す',
+    
+    // Chat
+    chat: 'チャット',
+    online: 'オンライン',
+    typeMessage: 'メッセージを入力...',
+    noChats: 'まだチャットがありません',
+    startRandomMatch: '新しい人とのチャットを始めるにはランダムマッチングを開始してください',
+    findSomeone: '誰かを探す',
+    matched: 'マッチ済み',
+    someoneConnected: '誰かが接続されました',
+    
+    // Notifications
+    welcome: 'ようこそ！',
+    profileCreated: '匿名プロフィールが作成されました。',
+    postCreated: '投稿作成完了',
+    postShared: '匿名投稿が共有されました。',
+    registrationFailed: '登録失敗',
+    pleaseFillFields: 'すべての項目を入力してください',
+    birthYearGenderRequired: '生年と性別が必要です。',
+    invalidBirthYear: '無効な生年',
+    validBirthYear: '1950年から2010年の間の有効な生年を入力してください。',
+    pleaseWriteSomething: '何かを書いてください',
+    postContentEmpty: '投稿内容は空にできません。',
+    noMatchesFound: 'マッチが見つかりません',
+    tryAgainLater: 'より多くのユーザーがオンラインのときに再度お試しください。',
+    
+    // Error pages
+    pageNotFound: '404 ページが見つかりません',
+    pageNotFoundDesc: 'ルーターにページを追加するのを忘れましたか？',
+    
+    // Loading states
+    loadingFeed: 'フィードを読み込み中...',
+    
+    // Common
+    born: '生まれ',
+    cancel: 'キャンセル',
+    close: '閉じる',
+    more: 'もっと見る',
+    language: '言語',
+    korean: '한국어',
+    english: 'English',
+    japanese: '日本語',
   }
 };
 
@@ -163,7 +273,7 @@ export function setLanguage(lang: Language) {
 export function getLanguage(): Language {
   if (typeof window !== 'undefined') {
     const stored = localStorage.getItem('preferred_language');
-    if (stored && (stored === 'en' || stored === 'ko')) {
+    if (stored && (stored === 'en' || stored === 'ko' || stored === 'ja')) {
       currentLanguage = stored;
     }
   }
@@ -179,4 +289,21 @@ export function t(key: string): string {
   }
   
   return value || key;
+}
+
+// React Context for i18n
+interface I18nContextType {
+  language: Language;
+  setLanguage: (lang: Language) => void;
+  t: (key: string) => string;
+}
+
+export const I18nContext = createContext<I18nContextType | undefined>(undefined);
+
+export function useI18n(): I18nContextType {
+  const context = useContext(I18nContext);
+  if (!context) {
+    throw new Error('useI18n must be used within an I18nProvider');
+  }
+  return context;
 }

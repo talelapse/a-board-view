@@ -7,7 +7,9 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { getCurrentUser } from "@/lib/auth";
 import { Heart, MessageCircle, MoreHorizontal } from "lucide-react";
 import { format } from "date-fns";
-import { t } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n";
+import type { PostWithUser } from "@shared/schema";
+import type { CommentsResponse, LikesResponse } from "@/types/api";
 
 // Generate anonymous ID based on user ID
 function generateAnonymousId(userId: number): string {
@@ -16,7 +18,7 @@ function generateAnonymousId(userId: number): string {
 }
 
 interface PostItemProps {
-  post: any;
+  post: PostWithUser;
 }
 
 export default function PostItem({ post }: PostItemProps) {
@@ -24,13 +26,14 @@ export default function PostItem({ post }: PostItemProps) {
   const [newComment, setNewComment] = useState("");
   const [showAuthorInfo, setShowAuthorInfo] = useState(false);
   const currentUser = getCurrentUser();
+  const { t } = useI18n();
 
-  const { data: commentsData } = useQuery({
+  const { data: commentsData } = useQuery<CommentsResponse>({
     queryKey: ["/api/posts", post.id, "comments"],
     enabled: showComments,
   });
 
-  const { data: likesData } = useQuery({
+  const { data: likesData } = useQuery<LikesResponse>({
     queryKey: ["/api/posts", post.id, "likes"],
   });
 

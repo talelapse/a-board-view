@@ -192,6 +192,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI-only matching route
+  app.post('/api/matches/find-ai', async (req, res) => {
+    try {
+      const userId = parseInt(req.body.userId);
+      
+      // Ensure bots exist
+      await botService.ensureBotsExist();
+      const bot = await botService.getOrCreateBot();
+      
+      // Create match with bot directly
+      const match = await storage.createMatch(userId, bot.id);
+      (match as any).partner = bot;
+      
+      res.json({ match });
+    } catch (error) {
+      res.status(400).json({ error: error instanceof Error ? error.message : 'Failed to find AI match' });
+    }
+  });
+
   app.get('/api/matches/:userId', async (req, res) => {
     try {
       const userId = parseInt(req.params.userId);

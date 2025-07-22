@@ -65,13 +65,13 @@ export class BotService {
       4. 익명 채팅임을 염두에 두고 개인정보 묻지 않기
       5. 긍정적이고 건전한 대화 유지`;
 
-      const messages = [
-        { role: "system" as const, content: systemPrompt },
+      const messages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [
+        { role: "system", content: systemPrompt },
         ...conversationHistory.slice(-6).map((msg, index) => ({
-          role: (index % 2 === 0 ? "user" : "assistant") as const,
+          role: index % 2 === 0 ? "user" as const : "assistant" as const,
           content: msg
         })),
-        { role: "user" as const, content: message }
+        { role: "user", content: message }
       ];
 
       const response = await openai.chat.completions.create({

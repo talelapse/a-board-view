@@ -5,13 +5,15 @@ import BottomNavigation from "@/components/bottom-navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { Plus, MessageCircle } from "lucide-react";
 import { format } from "date-fns";
-import { t } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n";
+import type { MatchesResponse } from "@/types/api";
 
 export default function ChatsList() {
   const [, setLocation] = useLocation();
   const currentUser = getCurrentUser();
+  const { t } = useI18n();
 
-  const { data: matchesData, isLoading } = useQuery({
+  const { data: matchesData, isLoading } = useQuery<MatchesResponse>({
     queryKey: ["/api/matches", currentUser?.id],
     enabled: !!currentUser,
   });

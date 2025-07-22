@@ -1,4 +1,18 @@
-import { type User, type InsertUser, type Post, type InsertPost, type Comment, type InsertComment, type Like, type Match, type ChatMessage, type InsertChatMessage } from "@shared/schema";
+import { 
+  type User, 
+  type InsertUser, 
+  type Post, 
+  type PostWithUser,
+  type InsertPost, 
+  type Comment, 
+  type CommentWithUser,
+  type InsertComment, 
+  type Like, 
+  type Match, 
+  type MatchWithUsers,
+  type ChatMessage, 
+  type InsertChatMessage 
+} from "@shared/schema";
 import { randomInt } from "crypto";
 
 interface DataStore {
@@ -13,27 +27,27 @@ interface DataStore {
 import data from './data.json' assert { type: 'json' };
 
 const store: DataStore = {
-  users: data.users.map(u => ({ ...u, createdAt: new Date(u.createdAt) })),
-  posts: data.posts.map(p => ({ ...p, createdAt: new Date(p.createdAt) })),
-  comments: data.comments.map(c => ({ ...c, createdAt: new Date(c.createdAt) })),
+  users: data.users.map((u: any) => ({ ...u, createdAt: new Date(u.createdAt) })),
+  posts: data.posts.map((p: any) => ({ ...p, createdAt: new Date(p.createdAt) })),
+  comments: data.comments.map((c: any) => ({ ...c, createdAt: new Date(c.createdAt) })),
   likes: data.likes,
-  matches: data.matches.map(m => ({ ...m, createdAt: new Date(m.createdAt) })),
-  chatMessages: data.chatMessages.map(cm => ({ ...cm, createdAt: new Date(cm.createdAt) })),
+  matches: data.matches.map((m: any) => ({ ...m, createdAt: new Date(m.createdAt) })),
+  chatMessages: data.chatMessages.map((cm: any) => ({ ...cm, createdAt: new Date(cm.createdAt) })),
 };
 
 // Interface for storage operations
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   createUser(insertUser: InsertUser): Promise<User>;
-  getPosts(): Promise<Post[]>;
-  createPost(userId: number, postData: InsertPost): Promise<Post>;
-  getCommentsByPost(postId: number): Promise<Comment[]>;
-  createComment(postId: number, userId: number, commentData: InsertComment): Promise<Comment>;
+  getPosts(): Promise<PostWithUser[]>;
+  createPost(userId: number, postData: InsertPost): Promise<PostWithUser>;
+  getCommentsByPost(postId: number): Promise<CommentWithUser[]>;
+  createComment(postId: number, userId: number, commentData: InsertComment): Promise<CommentWithUser>;
   getLikesByPost(postId: number): Promise<Like[]>;
   toggleLike(postId: number, userId: number): Promise<void>;
-  findRandomMatch(userId: number): Promise<Match | null>;
-  getUserMatches(userId: number): Promise<Match[]>;
-  getMatch(matchId: number): Promise<Match | undefined>;
+  findRandomMatch(userId: number): Promise<MatchWithUsers | null>;
+  getUserMatches(userId: number): Promise<MatchWithUsers[]>;
+  getMatch(matchId: number): Promise<MatchWithUsers | undefined>;
   createChatMessage(matchId: number, senderId: number, content: string): Promise<ChatMessage>;
   getChatMessages(matchId: number): Promise<ChatMessage[]>;
 
@@ -41,7 +55,7 @@ export interface IStorage {
   createBot(birthYear: number, gender: string): Promise<User>;
   getRandomBot(): Promise<User | null>;
   // Match creation for JSON storage
-  createMatch(user1Id: number, user2Id: number): Promise<Match>;
+  createMatch(user1Id: number, user2Id: number): Promise<MatchWithUsers>;
 }
 
 export class JsonStorage implements IStorage {
@@ -56,35 +70,45 @@ export class JsonStorage implements IStorage {
     return user;
   }
 
-  async getPosts(): Promise<Post[]> {
+  async getPosts(): Promise<PostWithUser[]> {
     const result = await Promise.all(
       store.posts.map(async post => {
         const user = await this.getUser(post.userId);
-        return { ...post, user: user! } as Post;
+        return { ...post, user: user! } as PostWithUser;
       })
     );
     return result;
   }
 
-  async createPost(userId: number, postData: InsertPost): Promise<Post> {
+  async createPost(userId: number, postData: InsertPost): Promise<PostWithUser> {
     const id = store.posts.reduce((max, p) => Math.max(max, p.id), 0) + 1;
-    const post: Post = { id, userId, ...postData, createdAt: new Date(), user: await this.getUser(userId)! };
-    store.posts.push(post);
-    return post;
+    const basePost: Post = { 
+      id, 
+      userId, 
+      content: postData.content,
+      imageUrl: postData.imageUrl || null,
+      createdAt: new Date() 
+    };
+    const user = await this.getUser(userId);
+    const postWithUser: PostWithUser = { ...basePost, user: user! };
+    store.posts.push(basePost);
+    return postWithUser;
   }
 
-  async getCommentsByPost(postId: number): Promise<Comment[]> {
+  async getCommentsByPost(postId: number): Promise<CommentWithUser[]> {
     return store.comments.filter(c => c.postId === postId).map(c => ({
       ...c,
       user: store.users.find(u => u.id === c.userId)!
-    } as Comment));
+    } as CommentWithUser));
   }
 
-  async createComment(postId: number, userId: number, commentData: InsertComment): Promise<Comment> {
+  async createComment(postId: number, userId: number, commentData: InsertComment): Promise<CommentWithUser> {
     const id = store.comments.reduce((max, c) => Math.max(max, c.id), 0) + 1;
-    const comment: Comment = { id, postId, userId, ...commentData, createdAt: new Date(), user: store.users.find(u => u.id === userId)! };
-    store.comments.push(comment);
-    return comment;
+    const baseComment: Comment = { id, postId, userId, ...commentData, createdAt: new Date() };
+    const user = store.users.find(u => u.id === userId);
+    const commentWithUser: CommentWithUser = { ...baseComment, user: user! };
+    store.comments.push(baseComment);
+    return commentWithUser;
   }
 
   async getLikesByPost(postId: number): Promise<Like[]> {
@@ -101,17 +125,18 @@ export class JsonStorage implements IStorage {
     }
   }
 
-  async findRandomMatch(userId: number): Promise<Match | null> {
+  async findRandomMatch(userId: number): Promise<MatchWithUsers | null> {
     const candidates = store.users.filter(u => u.id !== userId && !u.isBot);
     if (candidates.length === 0) return null;
     const partner = candidates[randomInt(0, candidates.length)];
     const id = store.matches.reduce((max, m) => Math.max(max, m.id), 0) + 1;
-    const match: Match = { id, user1Id: userId, user2Id: partner.id, createdAt: new Date() };
-    store.matches.push(match);
-    return { ...match, user1: await this.getUser(userId)!, user2: partner };
+    const baseMatch: Match = { id, user1Id: userId, user2Id: partner.id, createdAt: new Date() };
+    store.matches.push(baseMatch);
+    const user1 = await this.getUser(userId);
+    return { ...baseMatch, user1: user1!, user2: partner };
   }
 
-  async getUserMatches(userId: number): Promise<Match[]> {
+  async getUserMatches(userId: number): Promise<MatchWithUsers[]> {
     return store.matches.filter(m => m.user1Id === userId || m.user2Id === userId).map(m => ({
       ...m,
       user1: store.users.find(u => u.id === m.user1Id)!,
@@ -119,7 +144,7 @@ export class JsonStorage implements IStorage {
     }));
   }
 
-  async getMatch(matchId: number): Promise<Match | undefined> {
+  async getMatch(matchId: number): Promise<MatchWithUsers | undefined> {
     const m = store.matches.find(m => m.id === matchId);
     if (!m) return undefined;
     return { ...m, user1: store.users.find(u => u.id === m.user1Id)!, user2: store.users.find(u => u.id === m.user2Id)! };
@@ -151,11 +176,13 @@ export class JsonStorage implements IStorage {
     return bots[idx];
   }
   
-  async createMatch(user1Id: number, user2Id: number): Promise<Match> {
+  async createMatch(user1Id: number, user2Id: number): Promise<MatchWithUsers> {
     const id = store.matches.reduce((max, m) => Math.max(max, m.id), 0) + 1;
-    const match: Match = { id, user1Id, user2Id, createdAt: new Date() };
-    store.matches.push(match);
-    return { ...match, user1: await this.getUser(user1Id)!, user2: await this.getUser(user2Id)! };
+    const baseMatch: Match = { id, user1Id, user2Id, createdAt: new Date() };
+    store.matches.push(baseMatch);
+    const user1 = await this.getUser(user1Id);
+    const user2 = await this.getUser(user2Id);
+    return { ...baseMatch, user1: user1!, user2: user2! };
   }
 }
 

@@ -1,7 +1,8 @@
 import { format } from "date-fns";
+import type { CommentWithUser } from "@shared/schema";
 
 interface CommentItemProps {
-  comment: any;
+  comment: CommentWithUser;
 }
 
 // Generate anonymous ID based on user ID

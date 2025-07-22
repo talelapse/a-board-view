@@ -1,0 +1,26 @@
+client/src/components/post-item.tsx(37,34): error TS2339: Property 'comments' does not exist on type '{}'.
+client/src/components/post-item.tsx(38,28): error TS2339: Property 'likes' does not exist on type '{}'.
+client/src/components/post-item.tsx(39,31): error TS7006: Parameter 'like' implicitly has an 'any' type.
+client/src/components/post-item.tsx(143,26): error TS7006: Parameter 'comment' implicitly has an 'any' type.
+client/src/pages/chat.tsx(32,28): error TS2339: Property 'matches' does not exist on type '{}'.
+client/src/pages/chat.tsx(32,43): error TS7006: Parameter 'm' implicitly has an 'any' type.
+client/src/pages/chats-list.tsx(19,32): error TS2339: Property 'matches' does not exist on type '{}'.
+client/src/pages/chats-list.tsx(63,26): error TS7006: Parameter 'match' implicitly has an 'any' type.
+client/src/pages/feed.tsx(22,28): error TS2339: Property 'posts' does not exist on type '{}'.
+client/src/pages/feed.tsx(64,24): error TS7006: Parameter 'post' implicitly has an 'any' type.
+server/botService.ts(71,17): error TS1355: A 'const' assertions can only be applied to references to enum members, or string, number, boolean, array, or object literals.
+server/storage.ts(16,33): error TS2698: Spread types may only be created from object types.
+server/storage.ts(16,61): error TS2339: Property 'createdAt' does not exist on type 'never'.
+server/storage.ts(17,33): error TS2698: Spread types may only be created from object types.
+server/storage.ts(17,61): error TS2339: Property 'createdAt' does not exist on type 'never'.
+server/storage.ts(18,39): error TS2698: Spread types may only be created from object types.
+server/storage.ts(18,67): error TS2339: Property 'createdAt' does not exist on type 'never'.
+server/storage.ts(20,37): error TS2698: Spread types may only be created from object types.
+server/storage.ts(20,65): error TS2339: Property 'createdAt' does not exist on type 'never'.
+server/storage.ts(21,48): error TS2698: Spread types may only be created from object types.
+server/storage.ts(21,78): error TS2339: Property 'createdAt' does not exist on type 'never'.
+server/storage.ts(71,74): error TS2353: Object literal may only specify known properties, and 'user' does not exist in type '{ id: number; createdAt: Date; userId: number; content: string; imageUrl: string | null; }'.
+server/storage.ts(85,91): error TS2353: Object literal may only specify known properties, and 'user' does not exist in type '{ id: number; createdAt: Date; userId: number; content: string; postId: number; }'.
+server/storage.ts(111,24): error TS2561: Object literal may only specify known properties, but 'user1' does not exist in type '{ id: number; createdAt: Date; user1Id: number; user2Id: number; }'. Did you mean to write 'user1Id'?
+server/storage.ts(125,20): error TS2561: Object literal may only specify known properties, but 'user1' does not exist in type '{ id: number; createdAt: Date; user1Id: number; user2Id: number; }'. Did you mean to write 'user1Id'?
+server/storage.ts(158,24): error TS2561: Object literal may only specify known properties, but 'user1' does not exist in type '{ id: number; createdAt: Date; user1Id: number; user2Id: number; }'. Did you mean to write 'user1Id'?

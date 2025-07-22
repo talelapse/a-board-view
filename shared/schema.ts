@@ -128,3 +128,8 @@ export type ChatMessage = typeof chatMessages.$inferSelect;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type Friendship = typeof friendships.$inferSelect;
 export type InsertFriendship = typeof friendships.$inferInsert;
+
+// Extended types for JSON storage with populated relations
+export type PostWithUser = Post & { user: User };
+export type CommentWithUser = Comment & { user: User };
+export type MatchWithUsers = Match & { user1: User; user2: User };

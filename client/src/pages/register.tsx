@@ -9,13 +9,14 @@ import { Separator } from "@/components/ui/separator";
 import { apiRequest } from "@/lib/queryClient";
 import { setCurrentUser } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
-import { t } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n";
 
 export default function Register() {
   const [, setLocation] = useLocation();
   const [birthYear, setBirthYear] = useState("");
   const [gender, setGender] = useState<"a" | "b" | "">("");
   const { toast } = useToast();
+  const { t } = useI18n();
 
   const registerMutation = useMutation({
     mutationFn: async (userData: { birthYear: number; gender: string }) => {

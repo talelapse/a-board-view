@@ -7,7 +7,8 @@ import { useWebSocket } from "@/hooks/use-websocket";
 import { getCurrentUser } from "@/lib/auth";
 import { ArrowLeft, X, Send, UserPlus } from "lucide-react";
 import { format } from "date-fns";
-import { t } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n";
+import type { MatchesResponse } from "@/types/api";
 
 export default function Chat() {
   const [, setLocation] = useLocation();
@@ -16,6 +17,7 @@ export default function Chat() {
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const currentUser = getCurrentUser();
+  const { t } = useI18n();
   
   const { sendMessage, messages } = useWebSocket(matchId);
 
@@ -24,7 +26,7 @@ export default function Chat() {
     enabled: !!matchId,
   });
 
-  const { data: matchInfo } = useQuery({
+  const { data: matchInfo } = useQuery<MatchesResponse>({
     queryKey: ["/api/matches", currentUser?.id],
     enabled: !!currentUser,
   });

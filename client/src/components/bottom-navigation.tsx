@@ -1,7 +1,7 @@
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Home, UserPlus, MessageCircle, Search } from "lucide-react";
-import { t } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n";
 
 interface BottomNavigationProps {
   currentPage: string;
@@ -13,6 +13,7 @@ export default function BottomNavigation({
   onRandomMatch 
 }: BottomNavigationProps) {
   const [, setLocation] = useLocation();
+  const { t } = useI18n();
 
   return (
     <nav className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-200">

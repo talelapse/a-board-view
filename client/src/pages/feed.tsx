@@ -5,16 +5,19 @@ import PostItem from "@/components/post-item";
 import CreatePostModal from "@/components/create-post-modal";
 import RandomMatchModal from "@/components/random-match-modal";
 import BottomNavigation from "@/components/bottom-navigation";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { getCurrentUser } from "@/lib/auth";
-import { Plus, UserPlus } from "lucide-react";
-import { t } from "@/lib/i18n";
+import { Plus } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
+import type { PostsResponse } from "@/types/api";
 
 export default function Feed() {
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [showRandomMatch, setShowRandomMatch] = useState(false);
   const currentUser = getCurrentUser();
+  const { t } = useI18n();
 
-  const { data: postsData, isLoading } = useQuery({
+  const { data: postsData, isLoading } = useQuery<PostsResponse>({
     queryKey: ["/api/posts"],
     enabled: !!currentUser,
   });
@@ -26,7 +29,7 @@ export default function Feed() {
       <div className="min-h-screen bg-bg-soft flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-text-secondary">피드를 불러오는 중...</p>
+          <p className="text-text-secondary">{t('loadingFeed')}</p>
         </div>
       </div>
     );
@@ -38,13 +41,16 @@ export default function Feed() {
         {/* Header */}
         <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
           <h1 className="text-xl font-bold text-text-primary">{t('feed')}</h1>
-          <Button
-            onClick={() => setShowCreatePost(true)}
-            className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-full text-sm"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            {t('post')}
-          </Button>
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher />
+            <Button
+              onClick={() => setShowCreatePost(true)}
+              className="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-full text-sm"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              {t('post')}
+            </Button>
+          </div>
         </header>
 
         {/* Feed Content */}

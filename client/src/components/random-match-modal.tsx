@@ -51,11 +51,48 @@ export default function RandomMatchModal({ isOpen, onClose }: RandomMatchModalPr
     },
   });
 
+  const findAIMatchMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/matches/find-ai", {
+        userId: currentUser?.id,
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      if (data.match) {
+        setFoundMatch(data.match);
+        setMatchState("found");
+      } else {
+        toast({
+          title: "AI 매칭에 실패했습니다",
+          description: "다시 시도해주세요",
+          variant: "destructive",
+        });
+        setMatchState("none");
+      }
+    },
+    onError: (error) => {
+      toast({
+        title: "AI 매칭 실패",
+        description: error.message,
+        variant: "destructive",
+      });
+      setMatchState("none");
+    },
+  });
+
   const handleStartSearch = () => {
     setMatchState("searching");
     setTimeout(() => {
       findMatchMutation.mutate();
     }, 2000); // Simulate search delay
+  };
+
+  const handleStartAIMatch = () => {
+    setMatchState("searching");
+    setTimeout(() => {
+      findAIMatchMutation.mutate();
+    }, 1000); // AI matching is faster
   };
 
   const handleStartChat = () => {
@@ -92,12 +129,21 @@ export default function RandomMatchModal({ isOpen, onClose }: RandomMatchModalPr
             </div>
             <h3 className="text-lg font-bold text-text-primary mb-2">{t('findMatch')}</h3>
             <p className="text-text-secondary mb-6">{t('connectWithRandom')}</p>
-            <Button
-              onClick={handleStartSearch}
-              className="w-full bg-primary hover:bg-primary-dark"
-            >
-              {t('startMatching')}
-            </Button>
+            <div className="space-y-3">
+              <Button
+                onClick={handleStartSearch}
+                className="w-full bg-primary hover:bg-primary-dark"
+              >
+                {t('startMatching')}
+              </Button>
+              <Button
+                onClick={handleStartAIMatch}
+                variant="outline"
+                className="w-full"
+              >
+                AI와 매칭
+              </Button>
+            </div>
           </div>
         )}
 
