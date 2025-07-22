@@ -92,12 +92,25 @@ export default function RandomMatchModal({ isOpen, onClose }: RandomMatchModalPr
             </div>
             <h3 className="text-lg font-bold text-text-primary mb-2">{t('findMatch')}</h3>
             <p className="text-text-secondary mb-6">{t('connectWithRandom')}</p>
-            <Button
-              onClick={handleStartSearch}
-              className="w-full bg-primary hover:bg-primary-dark"
-            >
-              {t('startMatching')}
-            </Button>
+            <div className="space-y-3">
+              <Button
+                onClick={handleStartSearch}
+                className="w-full bg-primary hover:bg-primary-dark"
+              >
+                {t('startMatching')}
+              </Button>
+              <Button
+                onClick={() => {
+                  setLocation('/chat/ai-bot');
+                  onClose();
+                  resetState();
+                }}
+                variant="outline"
+                className="w-full border-blue-500 text-blue-600 hover:bg-blue-50"
+              >
+                🤖 AI와 매칭
+              </Button>
+            </div>
           </div>
         )}
 
