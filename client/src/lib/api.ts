@@ -27,12 +27,12 @@ export interface BackendPost {
     name: string;
   }>;
   gender?: string;
-  userId: string;
-  anonId: string;
+  anonymousId: string;
   createdAt: string;
-  updatedAt: string;
+  deleted: boolean;
   reportCount: number;
-  moderated: boolean;
+  viewCount: number;
+  canDelete: boolean;
   comments: BackendComment[];
   likes: BackendLike[];
 }
@@ -40,18 +40,18 @@ export interface BackendPost {
 export interface BackendComment {
   id: string;
   text: string;
-  attachments: Array<{
+  attachments?: Array<{
     id: string;
     url: string;
     type: string;
     name: string;
   }>;
-  userId: string;
-  anonId: string;
+  anonymousId?: string;
   parentCommentId?: string;
   createdAt: string;
-  updatedAt: string;
-  replies: BackendComment[];
+  deleted: boolean;
+  canDelete: boolean;
+  replies?: BackendComment[];
 }
 
 export interface BackendLike {
@@ -203,10 +203,21 @@ class BackendAPI {
       params.set('limit', limit.toString());
     }
     
-    const response = await this.request<{ flow?: BackendPost[] }>(`/posts?${params}`);
-    // Handle Kotlin Flow response - it might be streamed or in a different format
-    // For now, assume it returns an array or needs to be converted
-    return Array.isArray(response) ? response : [];
+    const response = await this.request<any>(`/posts?${params}`);
+    console.log('getPosts response:', response);
+    
+    // Handle different response formats from backend
+    if (Array.isArray(response)) {
+      return response;
+    } else if (response && Array.isArray(response.flow)) {
+      return response.flow;
+    } else if (response && Array.isArray(response.content)) {
+      return response.content;
+    } else if (response && response.data && Array.isArray(response.data)) {
+      return response.data;
+    }
+    
+    return [];
   }
 
   async createPost(data: CreatePostRequest): Promise<BackendPost> {
@@ -217,7 +228,25 @@ class BackendAPI {
   }
 
   async getPost(id: string): Promise<BackendPost> {
-    return this.request<BackendPost>(`/posts/${id}`);
+    const response = await this.request<any>(`/posts/${id}`);
+    console.log('getPost response:', response);
+    console.log('getPost response keys:', Object.keys(response || {}));
+    console.log('getPost response comments:', response?.comments);
+    
+    // Handle different response formats from backend
+    if (response && typeof response === 'object') {
+      // If it's wrapped in another object, extract the post data
+      if (response.data) {
+        return response.data;
+      } else if (response.post) {
+        return response.post;
+      } else {
+        // Assume the response itself is the post
+        return response;
+      }
+    }
+    
+    throw new Error('Invalid post data received from backend');
   }
 
   async addComment(postId: string, data: CreateCommentRequest): Promise<BackendComment> {

@@ -6,7 +6,8 @@ import CreatePostModal from "@/components/create-post-modal";
 import RandomMatchModal from "@/components/random-match-modal";
 import BottomNavigation from "@/components/bottom-navigation";
 import { LanguageSwitcher } from "@/components/language-switcher";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, isBackendAuthenticated } from "@/lib/auth";
+import { backendAPI } from "@/lib/api";
 import { Plus } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import type { PostsResponse } from "@/types/api";
@@ -17,9 +18,14 @@ export default function Feed() {
   const currentUser = getCurrentUser();
   const { t } = useI18n();
 
-  const { data: postsData, isLoading } = useQuery<PostsResponse>({
-    queryKey: ["/api/posts"],
-    enabled: !!currentUser,
+  // Always use backend API
+  const { data: postsData, isLoading } = useQuery({
+    queryKey: ["backend-posts"],
+    queryFn: async () => {
+      const posts = await backendAPI.getPosts();
+      return { posts };
+    },
+    enabled: isBackendAuthenticated(),
   });
 
   const posts = postsData?.posts || [];

@@ -383,16 +383,6 @@ export default function Login() {
               </form>
             </TabsContent>
           </Tabs>
-
-          <div className="mt-6 pt-4 border-t">
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => setLocation("/")}
-            >
-              익명으로 계속하기 (기존 방식)
-            </Button>
-          </div>
         </CardContent>
       </Card>
     </div>

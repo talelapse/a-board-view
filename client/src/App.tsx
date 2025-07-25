@@ -8,6 +8,7 @@ import NotFound from "@/pages/not-found";
 import Register from "@/pages/register";
 import Login from "@/pages/login";
 import Feed from "@/pages/feed";
+import PostPage from "@/pages/post";
 import Chat from "@/pages/chat";
 import ChatsList from "@/pages/chats-list";
 import { getAuthenticatedUser, isBackendAuthenticated } from "@/lib/auth";
@@ -16,14 +17,19 @@ function Router() {
   const authenticatedUser = getAuthenticatedUser();
   const hasBackendAuth = isBackendAuthenticated();
   
+  // For this app, we now require backend authentication for all features
+  // Anonymous users should go through login/register to get backend auth
+  const shouldShowAuth = !hasBackendAuth;
+  
   return (
     <Switch>
-      <Route path="/" component={authenticatedUser ? Feed : Register} />
+      <Route path="/" component={shouldShowAuth ? Login : Feed} />
       <Route path="/register" component={Register} />
       <Route path="/login" component={Login} />
-      <Route path="/feed" component={Feed} />
-      <Route path="/chat/:matchId" component={Chat} />
-      <Route path="/chats" component={ChatsList} />
+      <Route path="/feed" component={hasBackendAuth ? Feed : Login} />
+      <Route path="/post/:id" component={hasBackendAuth ? PostPage : Login} />
+      <Route path="/chat/:matchId" component={hasBackendAuth ? Chat : Login} />
+      <Route path="/chats" component={hasBackendAuth ? ChatsList : Login} />
       <Route component={NotFound} />
     </Switch>
   );

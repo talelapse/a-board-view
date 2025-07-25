@@ -3,8 +3,9 @@ import { useMutation } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { getCurrentUser } from "@/lib/auth";
+import { queryClient } from "@/lib/queryClient";
+import { backendAPI } from "@/lib/api";
+import { getCurrentUser, getCurrentBackendUser, isBackendAuthenticated } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { Camera, X } from "lucide-react";
 import { t } from "@/lib/i18n";
@@ -18,18 +19,25 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
   const [content, setContent] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const currentUser = getCurrentUser();
+  const backendUser = getCurrentBackendUser();
   const { toast } = useToast();
 
   const createPostMutation = useMutation({
     mutationFn: async (postData: { content: string; imageUrl?: string }) => {
-      const response = await apiRequest("POST", "/api/posts", {
-        ...postData,
-        userId: currentUser?.id,
+      // Always use backend API
+      return await backendAPI.createPost({
+        text: postData.content,
+        attachments: postData.imageUrl ? [{
+          id: Date.now().toString(),
+          url: postData.imageUrl,
+          type: 'image',
+          name: 'uploaded_image'
+        }] : undefined
       });
-      return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/posts"] });
+      // Invalidate backend posts queries
+      queryClient.invalidateQueries({ queryKey: ["backend-posts"] });
       setContent("");
       setImageUrl("");
       onClose();

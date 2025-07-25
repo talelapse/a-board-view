@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import { insertUserSchema, insertPostSchema, insertCommentSchema, insertChatMessageSchema } from "@shared/schema";
+import { insertChatMessageSchema } from "@shared/schema";
 import { z } from "zod";
 import { botService } from "./botService";
 
@@ -85,92 +85,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Auth routes
-  app.post('/api/auth/register', async (req, res) => {
-    try {
-      const userData = insertUserSchema.parse(req.body);
-      const user = await storage.createUser(userData);
-      res.json({ user });
-    } catch (error) {
-      res.status(400).json({ error: error instanceof Error ? error.message : 'Registration failed' });
-    }
-  });
-
-  app.get('/api/auth/user/:id', async (req, res) => {
-    try {
-      const user = await storage.getUser(parseInt(req.params.id));
-      if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-      res.json({ user });
-    } catch (error) {
-      res.status(400).json({ error: error instanceof Error ? error.message : 'Failed to fetch user' });
-    }
-  });
-
-  // Posts routes
-  app.get('/api/posts', async (req, res) => {
-    try {
-      const posts = await storage.getPosts();
-      res.json({ posts });
-    } catch (error) {
-      res.status(400).json({ error: error instanceof Error ? error.message : 'Failed to fetch posts' });
-    }
-  });
-
-  app.post('/api/posts', async (req, res) => {
-    try {
-      const postData = insertPostSchema.parse(req.body);
-      const userId = parseInt(req.body.userId);
-      const post = await storage.createPost(userId, postData);
-      res.json({ post });
-    } catch (error) {
-      res.status(400).json({ error: error instanceof Error ? error.message : 'Failed to create post' });
-    }
-  });
-
-  app.get('/api/posts/:id/comments', async (req, res) => {
-    try {
-      const postId = parseInt(req.params.id);
-      const comments = await storage.getCommentsByPost(postId);
-      res.json({ comments });
-    } catch (error) {
-      res.status(400).json({ error: error instanceof Error ? error.message : 'Failed to fetch comments' });
-    }
-  });
-
-  app.post('/api/posts/:id/comments', async (req, res) => {
-    try {
-      const postId = parseInt(req.params.id);
-      const commentData = insertCommentSchema.parse(req.body);
-      const userId = parseInt(req.body.userId);
-      const comment = await storage.createComment(postId, userId, commentData);
-      res.json({ comment });
-    } catch (error) {
-      res.status(400).json({ error: error instanceof Error ? error.message : 'Failed to create comment' });
-    }
-  });
-
-  app.post('/api/posts/:id/like', async (req, res) => {
-    try {
-      const postId = parseInt(req.params.id);
-      const userId = parseInt(req.body.userId);
-      await storage.toggleLike(postId, userId);
-      res.json({ success: true });
-    } catch (error) {
-      res.status(400).json({ error: error instanceof Error ? error.message : 'Failed to toggle like' });
-    }
-  });
-
-  app.get('/api/posts/:id/likes', async (req, res) => {
-    try {
-      const postId = parseInt(req.params.id);
-      const likes = await storage.getLikesByPost(postId);
-      res.json({ likes });
-    } catch (error) {
-      res.status(400).json({ error: error instanceof Error ? error.message : 'Failed to fetch likes' });
-    }
-  });
+  // Legacy routes removed - all API calls now go through backend proxy
 
   // Matching routes
   app.post('/api/matches/find', async (req, res) => {

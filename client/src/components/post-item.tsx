@@ -1,79 +1,51 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import CommentItem from "./comment-item";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { queryClient } from "@/lib/queryClient";
 import { getCurrentUser } from "@/lib/auth";
+import { backendAPI } from "@/lib/api";
 import { Heart, MessageCircle, MoreHorizontal } from "lucide-react";
 import { format } from "date-fns";
 import { useI18n } from "@/lib/i18n";
-import type { PostWithUser } from "@shared/schema";
-import type { CommentsResponse, LikesResponse } from "@/types/api";
+import type { BackendPost } from "@/lib/api";
 
-// Generate anonymous ID based on user ID
-function generateAnonymousId(userId: number): string {
+// Generate anonymous ID based on user ID  
+function generateAnonymousId(userId: string | undefined): string {
   const anonymousIds = ['익명A', '익명B', '익명C', '익명D', '익명E', '익명F', '익명G', '익명H', '익명I', '익명J'];
-  return anonymousIds[userId % anonymousIds.length];
+  if (!userId) return '익명';
+  // Convert string ID to number for consistent mapping
+  const numericId = parseInt(userId) || userId.length;
+  return anonymousIds[numericId % anonymousIds.length];
 }
 
 interface PostItemProps {
-  post: PostWithUser;
+  post: BackendPost;
 }
 
 export default function PostItem({ post }: PostItemProps) {
-  const [showComments, setShowComments] = useState(false);
-  const [newComment, setNewComment] = useState("");
   const [showAuthorInfo, setShowAuthorInfo] = useState(false);
+  const [, setLocation] = useLocation();
   const currentUser = getCurrentUser();
   const { t } = useI18n();
 
-  const { data: commentsData } = useQuery<CommentsResponse>({
-    queryKey: ["/api/posts", post.id, "comments"],
-    enabled: showComments,
-  });
-
-  const { data: likesData } = useQuery<LikesResponse>({
-    queryKey: ["/api/posts", post.id, "likes"],
-  });
-
-  const comments = commentsData?.comments || [];
-  const likes = likesData?.likes || [];
+  // Use backend post data directly instead of separate API calls
+  const comments = post.comments || [];
+  const likes = post.likes || [];
   const isLiked = likes.some((like) => like.userId === currentUser?.id);
 
   const likeMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest("POST", `/api/posts/${post.id}/like`, { userId: currentUser?.id });
+      await backendAPI.toggleLike(post.id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/posts", post.id, "likes"] });
-    },
-  });
-
-  const commentMutation = useMutation({
-    mutationFn: async (content: string) => {
-      const response = await apiRequest("POST", `/api/posts/${post.id}/comments`, {
-        content,
-        userId: currentUser?.id,
-      });
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/posts", post.id, "comments"] });
-      setNewComment("");
+      queryClient.invalidateQueries({ queryKey: ["backend-posts"] });
     },
   });
 
   const handleLike = () => {
     if (currentUser) {
       likeMutation.mutate();
-    }
-  };
-
-  const handleComment = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newComment.trim() && currentUser) {
-      commentMutation.mutate(newComment);
     }
   };
 
@@ -91,8 +63,8 @@ export default function PostItem({ post }: PostItemProps) {
               </span>
               {showAuthorInfo && (
                 <>
-                  <span className="text-sm text-text-secondary">{generateAnonymousId(post.user.id)}</span>
-                  <div className={`w-2 h-2 rounded-full ${post.user.gender === 'a' ? 'bg-gender-a' : 'bg-gender-b'}`}></div>
+                  <span className="text-sm text-text-secondary">{post.anonymousId ? post.anonymousId.slice(-8) : generateAnonymousId(post.anonymousId)}</span>
+                  <div className={`w-2 h-2 rounded-full ${post.gender === 'male' ? 'bg-gender-a' : 'bg-gender-b'}`}></div>
                 </>
               )}
             </div>
@@ -108,16 +80,37 @@ export default function PostItem({ post }: PostItemProps) {
         </Button>
       </div>
 
-      <div className="mb-3">
-        <p className="text-text-primary">{post.content}</p>
+      <div 
+        className="mb-3 cursor-pointer hover:bg-gray-50 -mx-4 px-4 py-2 rounded transition-colors"
+        onClick={() => setLocation(`/post/${post.id}`)}
+      >
+        <p className="text-text-primary">{post.text}</p>
       </div>
 
-      {post.imageUrl && (
-        <img
-          src={post.imageUrl}
-          alt="Post image"
-          className="w-full h-48 object-cover rounded-lg mb-3"
-        />
+      {post.attachments && post.attachments.length > 0 && (
+        <div className="space-y-2 mb-3">
+          {post.attachments.map((attachment) => (
+            attachment.type.startsWith('image/') ? (
+              <img
+                key={attachment.id}
+                src={attachment.url}
+                alt={attachment.name}
+                className="w-full h-48 object-cover rounded-lg"
+              />
+            ) : (
+              <div key={attachment.id} className="p-2 bg-gray-100 rounded border">
+                <a 
+                  href={attachment.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  {attachment.name}
+                </a>
+              </div>
+            )
+          ))}
+        </div>
       )}
 
       <div className="flex items-center justify-between">
@@ -133,7 +126,7 @@ export default function PostItem({ post }: PostItemProps) {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => setShowComments(!showComments)}
+          onClick={() => setLocation(`/post/${post.id}`)}
           className="flex items-center space-x-2 text-text-secondary hover:text-primary"
         >
           <MessageCircle className="w-4 h-4" />
@@ -141,32 +134,6 @@ export default function PostItem({ post }: PostItemProps) {
         </Button>
       </div>
 
-      {showComments && (
-        <div className="mt-4 space-y-3">
-          {comments.map((comment) => (
-            <CommentItem key={comment.id} comment={comment} />
-          ))}
-          
-          {currentUser && (
-            <form onSubmit={handleComment} className="mt-4">
-              <Textarea
-                placeholder={t('writeComment')}
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                className="mb-2 min-h-[60px]"
-              />
-              <Button
-                type="submit"
-                size="sm"
-                className="bg-primary hover:bg-primary-dark"
-                disabled={!newComment.trim() || commentMutation.isPending}
-              >
-                {commentMutation.isPending ? t('posting') : t('postComment')}
-              </Button>
-            </form>
-          )}
-        </div>
-      )}
     </div>
   );
 }

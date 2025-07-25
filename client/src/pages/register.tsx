@@ -20,15 +20,15 @@ export default function Register() {
 
   const registerMutation = useMutation({
     mutationFn: async (userData: { birthYear: number; gender: string }) => {
-      const response = await apiRequest("POST", "/api/auth/register", userData);
-      return response.json();
+      // Legacy anonymous registration is no longer supported
+      // Redirect to login page for backend authentication
+      setLocation("/login");
+      return null;
     },
-    onSuccess: (data) => {
-      setCurrentUser(data.user);
-      setLocation("/feed");
+    onSuccess: () => {
       toast({
-        title: t('welcome'),
-        description: t('profileCreated'),
+        title: "회원가입 필요",
+        description: "백엔드 계정으로 회원가입해주세요.",
       });
     },
     onError: (error) => {
@@ -161,17 +161,12 @@ export default function Register() {
 
           <div className="mt-6 pt-4 border-t">
             <Button
-              variant="outline"
-              className="w-full"
+              className="w-full bg-primary hover:bg-primary-dark"
               onClick={() => setLocation("/login")}
             >
-              백엔드 계정으로 로그인하기
+              이미 계정이 있으신가요? 로그인하기
             </Button>
           </div>
-
-          <p className="text-xs text-text-secondary text-center mt-6">
-            {t('identityRemains')}
-          </p>
         </CardContent>
       </Card>
     </div>
