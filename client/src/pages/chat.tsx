@@ -181,7 +181,7 @@ export default function Chat() {
     <div className="min-h-screen bg-white max-w-md mx-auto shadow-xl relative">
       <div className="flex flex-col h-screen">
         {/* Chat Header */}
-        <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center space-x-3">
+        <header className="bg-white border-b border-gray-200 px-4 py-4 flex items-center space-x-3 h-16">
           <Button
             variant="ghost"
             size="sm"

@@ -25,6 +25,17 @@ export function clearCurrentBackendUser(): void {
   backendAPI.clearToken();
 }
 
+// Logout with backend API call
+export async function logoutUser(): Promise<void> {
+  try {
+    await backendAPI.logout();
+  } catch (error) {
+    console.error('Backend logout failed, but clearing local session:', error);
+  }
+  // Always clear local data regardless of backend response
+  clearCurrentBackendUser();
+}
+
 // Check if user is authenticated with backend
 export function isBackendAuthenticated(): boolean {
   return !!backendAPI.getToken() && !!getCurrentBackendUser();
@@ -33,6 +44,24 @@ export function isBackendAuthenticated(): boolean {
 // Get current authenticated user
 export function getCurrentUser(): BackendUser | null {
   return getCurrentBackendUser();
+}
+
+// Initialize user session by fetching current user from backend
+export async function initializeUserSession(): Promise<BackendUser | null> {
+  if (!isBackendAuthenticated()) {
+    return null;
+  }
+  
+  try {
+    const user = await backendAPI.getCurrentUser();
+    setCurrentBackendUser(user);
+    return user;
+  } catch (error) {
+    console.error('Failed to initialize user session:', error);
+    // Clear invalid session
+    clearCurrentBackendUser();
+    return null;
+  }
 }
 
 // Legacy compatibility functions

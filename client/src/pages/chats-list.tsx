@@ -29,7 +29,7 @@ export default function ChatsList() {
     <div className="min-h-screen bg-white max-w-md mx-auto shadow-xl relative">
       <div className="flex flex-col h-screen">
         {/* Header */}
-        <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+        <header className="bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between h-16">
           <h1 className="text-xl font-bold text-text-primary">{t('chats')}</h1>
           <Button
             onClick={() => setLocation("/feed")}

@@ -43,18 +43,15 @@ export default function Login() {
       return response;
     },
     onSuccess: async () => {
-      // Get user data after successful login
+      // Get current user data after successful login
       try {
-        const users = await backendAPI.getUsers();
-        const user = users.find(u => u.email === loginData.email);
-        if (user) {
-          setCurrentBackendUser(user);
-          setLocation("/feed");
-          toast({
-            title: "로그인 성공",
-            description: "환영합니다!",
-          });
-        }
+        const user = await backendAPI.getCurrentUser();
+        setCurrentBackendUser(user);
+        setLocation("/feed");
+        toast({
+          title: "로그인 성공",
+          description: "환영합니다!",
+        });
       } catch (error) {
         console.error("Failed to fetch user data:", error);
         toast({

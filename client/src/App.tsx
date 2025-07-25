@@ -9,6 +9,7 @@ import Register from "@/pages/register";
 import Login from "@/pages/login";
 import Feed from "@/pages/feed";
 import PostPage from "@/pages/post";
+import SettingsPage from "@/pages/settings";
 import Chat from "@/pages/chat";
 import ChatsList from "@/pages/chats-list";
 import { getAuthenticatedUser, isBackendAuthenticated } from "@/lib/auth";
@@ -28,6 +29,7 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/feed" component={hasBackendAuth ? Feed : Login} />
       <Route path="/post/:id" component={hasBackendAuth ? PostPage : Login} />
+      <Route path="/settings" component={hasBackendAuth ? SettingsPage : Login} />
       <Route path="/chat/:matchId" component={hasBackendAuth ? Chat : Login} />
       <Route path="/chats" component={hasBackendAuth ? ChatsList : Login} />
       <Route component={NotFound} />

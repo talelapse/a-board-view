@@ -196,6 +196,15 @@ class BackendAPI {
     return response;
   }
 
+  async logout(): Promise<void> {
+    await this.request<void>('/auth/logout', {
+      method: 'POST',
+      body: JSON.stringify({}),
+    });
+    // Clear token after successful logout from backend
+    this.clearToken();
+  }
+
   // Posts endpoints
   async getPosts(offset = 0, limit?: number): Promise<BackendPost[]> {
     const params = new URLSearchParams({ offset: offset.toString() });
@@ -268,6 +277,10 @@ class BackendAPI {
   }
 
   // Users endpoints
+  async getCurrentUser(): Promise<BackendUser> {
+    return this.request<BackendUser>('/users/me');
+  }
+
   async getUsers(): Promise<BackendUser[]> {
     const response = await this.request<{ flow?: BackendUser[] }>('/users');
     return Array.isArray(response) ? response : [];
