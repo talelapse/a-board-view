@@ -159,6 +159,16 @@ export default function Register() {
             </Button>
           </form>
 
+          <div className="mt-6 pt-4 border-t">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => setLocation("/login")}
+            >
+              백엔드 계정으로 로그인하기
+            </Button>
+          </div>
+
           <p className="text-xs text-text-secondary text-center mt-6">
             {t('identityRemains')}
           </p>

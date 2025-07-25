@@ -2,10 +2,29 @@ import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { createProxyMiddleware } from 'http-proxy-middleware';
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Proxy middleware for backend API
+const BACKEND_API_URL = process.env.BACKEND_API_URL || 'http://localhost:8080';
+
+app.use('/api/backend', createProxyMiddleware({
+  target: BACKEND_API_URL,
+  changeOrigin: true,
+  pathRewrite: {
+    '^/api/backend': '', // Remove /api/backend prefix when forwarding
+  },
+  onProxyReq: (proxyReq, req, res) => {
+    log(`Proxying ${req.method} ${req.originalUrl} to ${BACKEND_API_URL}${req.url}`);
+  },
+  onError: (err, req, res) => {
+    log(`Proxy error: ${err.message}`);
+    res.status(500).json({ error: 'Backend service unavailable' });
+  }
+}));
 
 app.use((req, res, next) => {
   const start = Date.now();
