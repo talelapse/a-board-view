@@ -2,29 +2,66 @@ import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { createProxyMiddleware } from 'http-proxy-middleware';
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Proxy middleware for backend API
+// Simple proxy implementation for backend API
 const BACKEND_API_URL = process.env.BACKEND_API_URL || 'http://localhost:8080';
 
-app.use('/api/backend', createProxyMiddleware({
-  target: BACKEND_API_URL,
-  changeOrigin: true,
-  pathRewrite: {
-    '^/api/backend': '', // Remove /api/backend prefix when forwarding
-  },
-  onProxyReq: (proxyReq, req, res) => {
-    log(`Proxying ${req.method} ${req.originalUrl} to ${BACKEND_API_URL}${req.url}`);
-  },
-  onError: (err, req, res) => {
-    log(`Proxy error: ${err.message}`);
-    res.status(500).json({ error: 'Backend service unavailable' });
+app.use('/api/backend', async (req, res) => {
+  try {
+    const targetUrl = `${BACKEND_API_URL}${req.url}`;
+    log(`Proxying ${req.method} ${req.originalUrl} to ${targetUrl}`);
+    
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    
+    // Copy authorization header if present
+    if (req.headers.authorization) {
+      headers.Authorization = req.headers.authorization;
+    }
+    
+    const fetchOptions: RequestInit = {
+      method: req.method,
+      headers,
+    };
+    
+    // Add body for POST/PUT/PATCH requests
+    if (req.body && (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH')) {
+      fetchOptions.body = JSON.stringify(req.body);
+    }
+    
+    const response = await fetch(targetUrl, fetchOptions);
+    const data = await response.text();
+    
+    log(`Proxy response: ${response.status} from ${req.originalUrl}`);
+    
+    // Copy response headers
+    response.headers.forEach((value, key) => {
+      res.setHeader(key, value);
+    });
+    
+    res.status(response.status);
+    
+    // Try to parse as JSON, fallback to text
+    try {
+      const jsonData = JSON.parse(data);
+      res.json(jsonData);
+    } catch {
+      res.send(data);
+    }
+    
+  } catch (error) {
+    log(`Proxy error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    res.status(500).json({ 
+      error: 'Backend service unavailable', 
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
-}));
+});
 
 app.use((req, res, next) => {
   const start = Date.now();
